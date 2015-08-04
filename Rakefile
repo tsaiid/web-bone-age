@@ -5,7 +5,7 @@ task :deploy do
   puts "## Deploying to Github Pages"
 
   cd "_site" do
-    system "git reset -- ."
+    system "git checkout -- ."
     system "git pull"
   end
 
