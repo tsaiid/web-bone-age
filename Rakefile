@@ -4,11 +4,15 @@ desc "Deploy to Github Pages"
 task :deploy do
   puts "## Deploying to Github Pages"
 
+  cd "_site" do
+    system "git reset -- ."
+    system "git pull"
+  end
+
   puts "## Generating site"
   system "grunt build"
 
   cd "_site" do
-    system "git pull"
     system "git add -A"
 
     message = "web-bone-age updated at #{Time.now.utc}"
