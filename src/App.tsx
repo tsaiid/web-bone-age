@@ -1,23 +1,101 @@
 import { useState, useEffect, useCallback } from 'react';
 import { femaleOptions, maleOptions } from './data';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Container,
+  Grid,
+  Paper,
+  Tabs,
+  Tab,
+  List,
+  ListItemButton,
+  ListItemText,
+  Box,
+  Card,
+  CardMedia,
+  useMediaQuery,
+  useTheme,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  SelectChangeEvent,
+  CssBaseline,
+  ThemeProvider,
+  createTheme,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Link
+} from '@mui/material';
+
+// Create a custom theme
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#1976d2',
+    },
+    secondary: {
+      main: '#dc004e',
+    },
+    background: {
+      default: '#f5f5f5',
+    },
+  },
+  components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        html: { height: '100%', overflow: 'hidden' },
+        body: { height: '100%', overflow: 'hidden' },
+        '#root': { height: '100%' },
+      },
+    },
+  },
+});
 
 function App() {
   const [gender, setGender] = useState<'female' | 'male'>('female');
   const [femaleIndex, setFemaleIndex] = useState<number>(0);
   const [maleIndex, setMaleIndex] = useState<number>(0);
+  const [openAbout, setOpenAbout] = useState(false);
+
+  const muiTheme = useTheme();
+  const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
 
   const currentOptions = gender === 'female' ? femaleOptions : maleOptions;
   const selectedIndex = gender === 'female' ? femaleIndex : maleIndex;
   const setSelectedIndex = gender === 'female' ? setFemaleIndex : setMaleIndex;
 
   const currentImage = currentOptions[selectedIndex]?.value;
+  const currentLabel = currentOptions[selectedIndex]?.label;
 
-  const handleGenderChange = (newGender: 'female' | 'male') => {
-    setGender(newGender);
+  const handleGenderChange = (_event: React.SyntheticEvent, newValue: 'female' | 'male') => {
+    setGender(newValue);
   };
 
   const handleAgeChange = (index: number) => {
     setSelectedIndex(index);
+  };
+
+  const handleMobileAgeChange = (event: SelectChangeEvent) => {
+    const value = event.target.value;
+    const index = currentOptions.findIndex(opt => opt.value === value);
+    if (index !== -1) {
+      setSelectedIndex(index);
+    }
+  };
+
+  const handleOpenAbout = () => {
+    setOpenAbout(true);
+  };
+
+  const handleCloseAbout = () => {
+    setOpenAbout(false);
   };
 
   // Preload images
@@ -60,72 +138,159 @@ function App() {
   }, [handleKeyDown]);
 
   return (
-    <div className="wrapper">
-      <div className="container">
-        <div className="masthead mt-4 mb-4">
-          <h2 className="text-muted">Bone Age Reference</h2>
-        </div>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+        <AppBar position="static" sx={{ flexShrink: 0 }}>
+          <Toolbar variant="dense">
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+              Bone Age Reference
+            </Typography>
+            <Button 
+              color="inherit" 
+              onClick={handleOpenAbout}
+              sx={{ borderRadius: '20px', textTransform: 'none', border: '1px solid rgba(255, 255, 255, 0.5)' }}
+            >
+              About
+            </Button>
+          </Toolbar>
+        </AppBar>
 
-        <div className="row">
-          <div className="col-lg-2 col-md-3">
-            <ul className="nav nav-tabs mb-3">
-              <li className="nav-item">
-                <button
-                  className={`nav-link ${gender === 'female' ? 'active' : ''}`}
-                  onClick={() => handleGenderChange('female')}
-                  role="tab"
-                  aria-selected={gender === 'female'}
+        <Dialog
+          open={openAbout}
+          onClose={handleCloseAbout}
+          aria-labelledby="about-dialog-title"
+          aria-describedby="about-dialog-description"
+        >
+          <DialogTitle id="about-dialog-title">
+            About
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="about-dialog-description">
+              This application serves as a reference for bone age assessment. It provides a quick and easy way to view bone age images for different ages and genders.
+              <br /><br />
+              Github: <Link href="https://github.com/tsaiid/web-bone-age" target="_blank" rel="noopener">https://github.com/tsaiid/web-bone-age</Link>
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseAbout} autoFocus>
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Container maxWidth="xl" sx={{ flexGrow: 1, p: 2, height: 'calc(100% - 48px)', overflow: 'hidden' }}>
+          <Grid container spacing={2} sx={{ height: '100%' }}>
+            {/* Sidebar Section */}
+            <Grid size={{ xs: 12, md: 3 }} sx={{ height: isMobile ? 'auto' : '100%' }}>
+              <Paper 
+                elevation={3} 
+                sx={{ 
+                  height: '100%', 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  overflow: 'hidden'
+                }}
+              >
+                <Tabs
+                  value={gender}
+                  onChange={handleGenderChange}
+                  indicatorColor="primary"
+                  textColor="primary"
+                  variant="fullWidth"
+                  sx={{ borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}
                 >
-                  Female
-                </button>
-              </li>
-              <li className="nav-item">
-                <button
-                  className={`nav-link ${gender === 'male' ? 'active' : ''}`}
-                  onClick={() => handleGenderChange('male')}
-                  role="tab"
-                  aria-selected={gender === 'male'}
-                >
-                  Male
-                </button>
-              </li>
-            </ul>
+                  <Tab label="Female" value="female" />
+                  <Tab label="Male" value="male" />
+                </Tabs>
 
-            <div className="tab-content">
-              <div className="d-flex flex-column">
-                {currentOptions.map((option, index) => (
-                  <div className="form-check" key={option.label}>
-                    <input
-                      className="form-check-input"
-                      type="radio"
-                      name="ageRadios"
-                      id={`radio-${index}`}
-                      value={option.value}
-                      checked={selectedIndex === index}
-                      onChange={() => handleAgeChange(index)}
-                    />
-                    <label className="form-check-label" htmlFor={`radio-${index}`}>
-                      {option.label}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+                {isMobile ? (
+                  <Box sx={{ p: 2 }}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel id="age-select-label">Age</InputLabel>
+                      <Select
+                        labelId="age-select-label"
+                        id="age-select"
+                        value={currentOptions[selectedIndex]?.value || ''}
+                        label="Age"
+                        onChange={handleMobileAgeChange}
+                      >
+                        {currentOptions.map((option) => (
+                          <MenuItem key={option.label} value={option.value}>
+                            {option.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                ) : (
+                  <List 
+                    component="nav" 
+                    aria-label="age selection" 
+                    sx={{ 
+                      flexGrow: 1, 
+                      overflowY: 'auto',
+                      '& .MuiListItemButton-root': {
+                        py: 0.5
+                      }
+                    }}
+                  >
+                    {currentOptions.map((option, index) => (
+                      <ListItemButton
+                        key={option.label}
+                        selected={selectedIndex === index}
+                        onClick={() => handleAgeChange(index)}
+                        divider
+                      >
+                        <ListItemText primary={option.label} />
+                      </ListItemButton>
+                    ))}
+                  </List>
+                )}
+              </Paper>
+            </Grid>
 
-          <div className="col-lg-10 col-md-9 well">
-            <div id="bone-age-img" className="mt-3 mt-md-0">
-               {currentImage && <img src={currentImage} alt={`Bone age for ${gender} ${currentOptions[selectedIndex].label}`} className="img-fluid fade-in" />}
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="footer mt-auto">
-          <div className="container">
-              <p className="text-muted credit mb-0">&copy; tsaiid@VGHKS 2013</p>
-          </div>
-      </div>
-    </div>
+            {/* Image Section */}
+            <Grid 
+              size={{ xs: 12, md: 9 }} 
+              sx={{ 
+                height: isMobile ? 'calc(100% - 130px)' : '100%', 
+                pb: isMobile ? 2 : 0 
+              }}
+            >
+              <Card 
+                elevation={3} 
+                sx={{ 
+                  height: '100%', 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  alignItems: 'center', 
+                  p: 1,
+                  bgcolor: 'white'
+                }}
+              >
+                {currentImage ? (
+                  <CardMedia
+                    component="img"
+                    image={currentImage}
+                    alt={`Bone age for ${gender} ${currentLabel}`}
+                    sx={{ 
+                      height: '100%', 
+                      width: '100%',
+                      objectFit: 'contain'
+                    }}
+                  />
+                ) : (
+                  <Typography variant="body1" color="white">
+                    No image selected
+                  </Typography>
+                )}
+              </Card>
+            </Grid>
+          </Grid>
+        </Container>
+      </Box>
+    </ThemeProvider>
   );
 }
 
